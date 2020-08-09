@@ -1,41 +1,89 @@
-from random import choice
+import random, time
 
+#Word lists to randomly choose from
 WORDS = ["hello", "donkey", "cat", "pig", "computer", "python", "variable"]
+humanNames = ["Zappy", "Spelga", "Jooe", "Joshua", "Andrew", "Pili", "Connie"]
+superHeroes = ['ironman', 'robin', 'flash', 'thor', 'spiderman', 'superman', 'deadpool', 'antman']
 
-lives = 5
-word = choice(WORDS).lower()
-word_str = "*" * len(word)
-game_state = 1 # 0 you lose, 1 game in play, 2 you win
+word = []
+word_str = []
+game_state = 1
+category = ""
 
 name = input(f'Hi, welcome to Hangman. What is your name? ')
-print(f'The word has {len(word)} letters: {word_str}')
+print("Hello", name.lower(), "let's start playing Hangman!")
+time.sleep(1)
 
 
 while game_state == 1:
-    if lives > 0:        
-        if '*' in word_str:
-            current_letter = input(f'{name} please choose a letter: ').lower()
-            if current_letter not in word:
-                lives -= 1
-                if lives > 0:
-                    print(f"{current_letter} is not in the word. You have {lives} guesses left. Please try again")
-                    game_state = 1
-                else:
-                    game_state = 0
-                    print(f"Sorry you have lost as you have no guesses left!!. The word was {word}")
-            else:
-                letter_indexes = [i for i, letter in enumerate(word) if letter == current_letter]
-                if len(letter_indexes) == 1:
-                    word_str = word_str[:letter_indexes[0]] + current_letter + word_str[letter_indexes[0] + 1:]
-                    print(word_str)
-                else:
-                    for index in letter_indexes:
-                        word_str = word_str[:letter_indexes[0]] + current_letter + word_str[letter_indexes[0] + 1:]
-                    print(word_str)
+    #Choosing a wordlist from the above defined ones
+    while True:
+        if category.upper() == 'S':
+            secretWord = random.choice(superHeroes)
+            break
+        elif category.upper() == 'W':
+            secretWord = random.choice(WORDS)
+            break
+        elif category.upper() == 'H':
+            secretWord = random.choice(humanNames)
+            break
         else:
-            print(f"Congratulations you correctly guessed the word was {word}")
-            game_state = 2
+            category = input("Select a word list: S for Super-Heroes W for random words and H for human names; X to exit: ")
 
-print("Goodbye...")
+        if category.upper() == 'X':
+            print("Bye. See you next time!")
+            game_state = 0
+            break
+
+    if game_state:
+        secretWordList = list(secretWord)
+        lives = (len(secretWord) + 2)
+
+        #Adding blank lines to word to create the blank secret word
+        for n in secretWordList:
+            word.append('_ ')
+        print("Your Secret word is: ", (lives -2), " character long " +''.join(word))
+
+        print("The number of allowed guesses for this word is:", lives)
 
 
+        #starting the game
+        while game_state:
+
+            print("Guess a letter:")
+            letter = input()
+
+            if letter in word_str:
+                print("You already guessed this letter, try something else.")
+
+            else:
+                lives -= 1
+                word_str.append(letter)
+                if letter in secretWordList:
+                    print("Nice guess!")
+                    if lives > 0:
+                        print("You have ", lives, 'guess left!')
+                    for i in range(len(secretWordList)):
+                        if letter == secretWordList[i]:
+                            letterIndex = i
+                            word[letterIndex] = letter.lower()
+                    print("Your Secret word is: " + ''.join(word))
+
+                else:
+                    print("Oops! Try again.")
+                    if lives > 0:
+                        print("You have ", lives, 'guess left!')
+                    print("Your Secret word is: " + ''.join(word))
+
+
+            #Win/loss logic for the game
+            joinedList = ''.join(word)
+            if joinedList.lower() == secretWord.lower():
+                print("Yay! you won.")
+                break
+            elif lives == 0:
+                print("Too many Guesses!, Sorry better luck next time.")
+                print("The secret word was: "+ secretWord.lower())
+                break
+    break            
+print("Bye!")
